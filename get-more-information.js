@@ -143,7 +143,7 @@ const insertDataOneByOne = async () => {
 	const movies = await Movie.find({}).select('movieId')
 	let count = 1
 	for (const oneMovie of movies) {
-		console.log(`${count++}번째 영화 상세 정보 가져오는 중`)
+		console.log(`${count++} / ${movies.length} 영화 상세 정보 가져오는 중`)
 		const movieId = oneMovie.movieId
 		const [age, [country, duration], galleryUrls, videoUrls, credits] =
 			await Promise.all([
@@ -162,6 +162,8 @@ const insertDataOneByOne = async () => {
 		movie.credits = credits
 
 		await movie.save()
+
+		if (oneMovie === movies[movies.length - 1]) console.log('완료!')
 	}
 }
 

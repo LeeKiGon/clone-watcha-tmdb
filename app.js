@@ -176,7 +176,7 @@ const getAllData = async (page) => {
 	const data = await Promise.all(list)
 	count = 1
 	for (const d of data) {
-		console.log(`${count++}번째 영화 목록 가져오는 중`)
+		console.log(`${count++} / ${data.length} 영화 목록 가져오는 중`)
 		for (const json of d) {
 			const existMovie = await Movie.findOne({ movieId: json.movieId })
 			if (existMovie) {
@@ -186,6 +186,7 @@ const getAllData = async (page) => {
 				await Movie.create(json)
 			}
 		}
+		if (d === data[data.length - 1]) console.log('완료!')
 	}
 
 }
