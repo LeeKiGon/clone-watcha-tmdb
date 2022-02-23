@@ -61,6 +61,7 @@ const fetchNowPlayingMovies = async (page) => {
 			originalTitle,
 			description,
 			category,
+			page
 		})
 	}
 	return list
@@ -94,6 +95,7 @@ const fetchPopularMovies = async (page) => {
 			originalTitle,
 			description,
 			category,
+			page
 		})
 	}
 	return list
@@ -127,6 +129,7 @@ const fetchTopRatedMovies = async (page) => {
 			originalTitle,
 			description,
 			category,
+			page
 		})
 	}
 	return list
@@ -160,6 +163,7 @@ const fetchUpcomingMovies = async (page) => {
 			originalTitle,
 			description,
 			category,
+			page
 		})
 	}
 	return list

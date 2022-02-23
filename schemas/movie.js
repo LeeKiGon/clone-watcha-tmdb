@@ -50,6 +50,9 @@ const movieSchema = mongoose.Schema({
 	category: {
 		type: [String],
 	},
+	page: {
+		type: Number,
+	}
 })
 
 module.exports = mongoose.model('Movie', movieSchema, 'movies')
