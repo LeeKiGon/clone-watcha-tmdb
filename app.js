@@ -1,121 +1,198 @@
-const express = require('express');
-const connect = require('./schemas');
-const Movi = require('./schemas/movi');
-const dotenv = require('dotenv');
-const axios = require('axios');
+const express = require('express')
+const connect = require('./schemas')
+const Movie = require('./schemas/movie')
+const dotenv = require('dotenv')
+const axios = require('axios')
+const app = express()
 
-// const mongoose = require('mongoose');
+app.use(express.json())
+app.use('/', express.urlencoded({ extended: false }))
 
-dotenv.config();
+dotenv.config()
+connect()
 
-// mongoose.connect("mongodb://localhost:27017/gon", {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,//현재 서버 검색 및 엔진 모니터링 방식을 더 이상 사용하지 않으므로 새로운 서버 및 엔진 모니터링 방식을 사용
-// });
+const genres = {
+	28: '액션',
+	12: '모험',
+	16: '애니메이션',
+	35: '코미디',
+	80: '범죄',
+	99: '다큐멘터리',
+	18: '드라마',
+	10751: '가족',
+	14: '판타지',
+	36: '역사',
+	27: '공포',
+	10402: '음악',
+	9648: '미스터리',
+	10749: '로맨스',
+	878: 'SF',
+	10770: 'TV 영화',
+	53: '스릴러',
+	10752: '전쟁',
+	37: '서부',
+}
 
-// const db = mongoose.connection; //성공적으로 연결했거나 연결 오류가 발생하면 알림을 받아야한다.
-// db.on("error", console.error.bind(console, "connection error:"));
+// Now Playing 목록
+const fetchNowPlayingMovies = async (page) => {
+	const response = await axios.get(
+		`https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.MOVIE_DB_API_KEY}&language=ko-KR&page=${page}`
+	)
 
-const app = express();
-app.use(express.json());
-app.use('/', express.urlencoded({extended: false}));
+	const movies = response.data.results
+	const list = []
+	for (const movie of movies) {
+		const movieId = movie.id
+		const title = movie.title
+		const posterUrl =
+			'https://image.tmdb.org/t/p/original' + movie.poster_path
+		const year = movie.release_date.substring(0, 4)
+		const genre = movie.genre_ids.map((x) => genres[x]).join(', ')
+		const originalTitle = movie.original_title
+		const description = movie.overview
+		const category = ['now_playing']
 
-connect();
+		list.push({
+			movieId,
+			title,
+			posterUrl,
+			year,
+			genre,
+			originalTitle,
+			description,
+			category,
+			page
+		})
+	}
+	return list
+}
 
-// /**
-//  * Fetch popular movies from TMDB
-//  *  @returns {Array} movies
-//  */
- const fetchMovies = async (page) => {
-    try {
-      let result;
-      await axios
-        .get(
-            // `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.MOVIE_DB_API_KEY}&page=${page}&language=ko-KR`
-            `https://api.themoviedb.org/3/movie/634649?api_key=${process.env.MOVIE_DB_API_KEY}&language=ko-KR`
-        )
-        .then((response) => {          
-          result = response.data
-          // console.log(response)
-          // title = result.map((item) =>
-          //   item.title)
-            // console.log(title)          
-          // console.log(title)          
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      return result;
-    } catch (error) {
-      console.error(error);
-    }
-  };
+// popular 목록
+const fetchPopularMovies = async (page) => {
+	const response = await axios.get(
+		`https://api.themoviedb.org/3/movie/popular?api_key=${process.env.MOVIE_DB_API_KEY}&language=ko-KR&page=${page}`
+	)
 
-app.get('/movies', async (req, res) => {
-  try {
-    const {page} = req.query;
-    // console.log(page)
-    const data = await fetchMovies();
-    console.log(data)
-    // console.log(`${data.length}`)
+	const movies = response.data.results
+	const list = []
+	for (const movie of movies) {
+		const movieId = movie.id
+		const title = movie.title
+		const posterUrl =
+			'https://image.tmdb.org/t/p/original' + movie.poster_path
+		const year = movie.release_date.substring(0, 4)
+		const genre = movie.genre_ids.map((x) => genres[x]).join(', ')
+		const originalTitle = movie.original_title
+		const description = movie.overview
+		const category = ['popular']
 
-    return res.status(200).json({
-      status:200,
-      // message: `${data.length} movies found`, 
-      data
-    })
-    
-  } catch (err) {
-    return next();
-  }
-})
+		list.push({
+			movieId,
+			title,
+			posterUrl,
+			year,
+			genre,
+			originalTitle,
+			description,
+			category,
+			page
+		})
+	}
+	return list
+}
 
+// top_rated 목록
+const fetchTopRatedMovies = async (page) => {
+	const response = await axios.get(
+		`https://api.themoviedb.org/3/movie/top_rated?api_key=${process.env.MOVIE_DB_API_KEY}&language=ko-KR&page=${page}`
+	)
 
-app.post('/movies', async (req, res, next)=>{
-    try {
-        const {page} = req.query;
-        // console.log(page)
-        const data = await fetchMovies();
-        // console.log(`${data.length}`)
-        // console.log(data)
+	const movies = response.data.results
+	const list = []
+	for (const movie of movies) {
+		const movieId = movie.id
+		const title = movie.title
+		const posterUrl =
+			'https://image.tmdb.org/t/p/original' + movie.poster_path
+		const year = movie.release_date.substring(0, 4)
+		const genre = movie.genre_ids.map((x) => genres[x]).join(', ')
+		const originalTitle = movie.original_title
+		const description = movie.overview
+		const category = ['top_rated']
 
-        nam = data.map(item => item.name)
-        console.log(nam)
-        movieids = data.map((item) => item.id)
-        // console.log(movieids)
-        titles = data.map((item => item.title))
-        // console.log(titles)
-        postUrls = data.map((item => item.poster_path))
-        years = data.map((item => item.release_date))
-        countrys = data.map(item => item.original_language)
-        category = "popular"
+		list.push({
+			movieId,
+			title,
+			posterUrl,
+			year,
+			genre,
+			originalTitle,
+			description,
+			category,
+			page
+		})
+	}
+	return list
+}
 
+// upcoming 목록
+const fetchUpcomingMovies = async (page) => {
+	const response = await axios.get(
+		`https://api.themoviedb.org/3/movie/upcoming?api_key=${process.env.MOVIE_DB_API_KEY}&language=ko-KR&page=${page}`
+	)
 
-        // for(let i = 0; i < data.length; i++){
-        // movieId = movieids[i]
-        // title = titles[i]
-        // postUrl = 'https://image.tmdb.org/t/p/w1280' + postUrls[i]
-        // year = years[i]
-        // country = countrys[i]
-        // await Movi.create({ movieId, title, postUrl, year, country, category })
-        // }
+	const movies = response.data.results
+	const list = []
+	for (const movie of movies) {
+		const movieId = movie.id
+		const title = movie.title
+		const posterUrl =
+			'https://image.tmdb.org/t/p/original' + movie.poster_path
+		const year = movie.release_date.substring(0, 4)
+		const genre = movie.genre_ids.map((x) => genres[x]).join(', ')
+		const originalTitle = movie.original_title
+		const description = movie.overview
+		const category = ['upcoming']
 
-        return res.status(200).json({
-          status:200,
-          // message: `${data.length} movies found`, 
-          data
-        })
-        
-      } catch (err) {
-        return next(err);
-      }
-})
+		list.push({
+			movieId,
+			title,
+			posterUrl,
+			year,
+			genre,
+			originalTitle,
+			description,
+			category,
+			page
+		})
+	}
+	return list
+}
 
+const getAllData = async (page) => {
+	const list = []
+	for (let i = 1; i <= page; i++) {
+		list.push(fetchNowPlayingMovies(i))
+		list.push(fetchPopularMovies(i))
+		list.push(fetchTopRatedMovies(i))
+		list.push(fetchUpcomingMovies(i))
+	}
+	const data = await Promise.all(list)
+	count = 1
+	for (const d of data) {
+		console.log(`${count++} / ${data.length} 영화 목록 가져오는 중`)
+		for (const json of d) {
+			const existMovie = await Movie.findOne({ movieId: json.movieId })
+			if (existMovie) {
+				existMovie.category = existMovie.category.concat(json.category)
+				await existMovie.save()
+			} else {
+				await Movie.create(json)
+			}
+		}
+		if (d === data[data.length - 1]) console.log('완료!')
+	}
 
-const server = app.listen(4000, () => {
-  console.log(`Server listening on port ${server.address().port}`);
-});
+}
 
-app.get('/', (_, res)=>{
-    res.send('hi')
-})
+getAllData(5)
